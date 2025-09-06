@@ -553,16 +553,24 @@ class FrameCheckerPro(ctk.CTk):
         if not frames:
             self.canvas_heat.draw(); return
         start,end = frames[0],frames[-1]
-        length = end-start+1
-        cols = int(ceil(length**0.5)); rows = int(ceil(length/cols))
-        arr = np.zeros((rows,cols), dtype=int)
-        for idx,n in enumerate(range(start,end+1)):
-            r = idx//cols; c = idx%cols
-            arr[r,c] = 0 if n in frames else 1
-        cmap = plt.get_cmap("RdYlGn_r")
-        self.ax_heat.imshow(arr, aspect="auto", cmap=cmap, interpolation="nearest")
-        self.ax_heat.set_xticks([]); self.ax_heat.set_yticks([]); self.ax_heat.set_title("Heatmap (red=missing)")
-        self.fig_heat.tight_layout(); self.canvas_heat.draw()
+        total = end - start + 1
+        data = np.zeros(total, dtype=int)
+        for f in frames:
+            if start <= f <= end:
+                data[f - start] = 1
+
+        cols = 100  
+        rows = ceil(total / cols)
+        grid = np.zeros((rows, cols))
+        for i in range(total):
+            r, c = divmod(i, cols)
+            grid[r, c] = data[i]
+
+        self.ax_heat.imshow(grid, cmap="Greens", aspect="auto", interpolation="nearest")
+        self.ax_heat.set_title("Heatmap (green=present, black=missing)")
+        self.ax_heat.axis("off")
+        self.canvas_heat.draw()
+
 
     # -----------------------
     # Export / Copy
